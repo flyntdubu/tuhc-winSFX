@@ -23,10 +23,6 @@ module.exports = {
             model: "disable_clack",
             label: "Disable Clack SFX",
             desc: "Disables SFX on keyboard clacks.",
-        }, {
-            model: "click_only_on_valid",
-            label: "Click SFX only on valid clicks.",
-            desc: "Only plays click SFX when the click a link or button.",
         }]
     },
 
@@ -35,8 +31,7 @@ module.exports = {
         store = api.store
         store.set("click", store.get("click", "assets:/mod/winSFX/click.mp3")) // from https://www.youtube.com/watch?v=h6_8SlZZwvQ
         store.set("clack", store.get("clack", "assets:/mod/winSFX/clack.mp3")) // assets:/storyfiles/hs/00003/00003.swf
-        store.set("click_only_on_valid", store.get("click_only_on_valid", false))
-        store.set("clack_only_on_valid", store.get("clack_only_on_valid", false))
+        // TODO: add mode to only register valid clicks!
     },
 
     vueHooks: [{
@@ -55,20 +50,8 @@ module.exports = {
                     return volume;
                 };
 
-                document.addEventListener("click", (event) => {
-                    const target = event.target;
-                    const isInteractive = (
-                        target.tagName === "A" ||
-                        target.tagName === "button" ||
-                        target.tagName === "input" ||
-                        target.tagName === "select" ||
-                        target.tagName === "textarea" ||
-                        target.tabIndex >= 0 ||
-                        target.getAttribute("role") === "button" ||
-                        target.classList.contains("Button")
-                    );
-                    
-                    if (!store.get("disable_click", false) && (!store.get("click_only_on_valid", "false") || isInteractive)) {
+                document.addEventListener("click", () => {
+                    if (!store.get("disable_click", false)) {
                         const audio = new Audio(store.get("click", "assets:/mod/winSFX/click.mp3"));
                         const pitchShift = Math.random() * 0.2; // random to make it interesting :3
                         audio.playbackRate = 1 + pitchShift;
@@ -78,7 +61,7 @@ module.exports = {
 
                 document.addEventListener("keydown", (event) => {
                     if (!keyStates[event.code]) {
-                        keyStates[event.code] = true; // this key is down
+                        keyStates[event.code] = true; 
                         
                         if (!store.get("disable_clack", false)) {
                             const audio = new Audio(store.get("clack", "assets:/mod/winSFX/clack.mp3"));
@@ -92,7 +75,7 @@ module.exports = {
                 });
 
                 document.addEventListener("keyup", (event) => {
-                    keyStates[event.code] = false; //this key is up
+                    keyStates[event.code] = false;
                 });
 
                 alreadyInitialized = true; // initialized, flag it as so!
